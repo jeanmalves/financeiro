@@ -53,24 +53,30 @@
             
             $.getJSON('model/30dias.php',function(dados){         
                 $(dados).each(function(ind, elem){
-                    var classValor = (elem.tipo == "C")? 'valor-credito':'valor-debito';
-                    var data = new Date(elem.data);
-                    
-                    var tr = $('<tr>'+
-                        '<td>' + data.getDate() + '/' + (data.getMonth()+1) + '/' + data.getFullYear() + '</td>'+
-                        '<td>'+elem.descricao+'</td>'+
-                        '<td>'+elem.categoria+'</td>'+
-                        '<td>'+elem.tipo+'</td>'+
-                        '<td class="'+classValor+'">R$ '+ formataDinheiro(elem.valor) +'</td>'+
-                      '</tr>');
-        
-                    $('#rel-30dias tbody').append(tr);
+                    elem.data = formataDataDB(elem.data);
+                    insereRegistro(elem, "append");
                 });
             });
             
             $.getJSON('model/saldo.php', function(dados){
                 
                 $("#valor-total").html('R$ '+ formataDinheiro(dados.saldo));
+            });
+            
+            $("#cadastro-novo").submit(function(evento){
+                evento.preventDefault();
+                
+                var novoRegistro = {
+                    descricao: $("#Descricao").val(),
+                    data: $("#data").val(),
+                    valor: $("#valor").val(),
+                    categoria: $("#categoria").val(),
+                    tipo: $("input[name='tipos']:checked").val()
+                };
+                
+                $.post('model/novo.php', novoRegistro);
+                $("#modal-add").modal('hide');
+                insereRegistro(novoRegistro, "prepend");
             });
         });
     </script>
@@ -169,7 +175,7 @@
     <div id="modal-add" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
       <div class="modal-dialog modal-sm">
         <div class="modal-content">
-            <form class="form-horizontal" action="model/novo.php" method="POST">
+            <form id="cadastro-novo" class="form-horizontal">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     <h4 class="modal-title" id="gridSystemModalLabel">Adicionar Novo Registro</h4>
