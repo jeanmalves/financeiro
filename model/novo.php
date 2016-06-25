@@ -6,7 +6,7 @@ print_r($_POST);
 
 $data = DateTime::createFromFormat("d/m/Y", $_POST['data']);
 
-$valor = ($_POST['tipos'] == "D")? $_POST['valor'] * -1 : $_POST['valor'];
+$valor = ($_POST['tipo'] == "D")? $_POST['valor'] * -1 : $_POST['valor'];
 
 $sql = "INSERT INTO conta_corrente
             ('data','descricao','categoria','tipo','valor')
