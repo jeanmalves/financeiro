@@ -1,9 +1,6 @@
 <?php
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-$dbcon = new PDO("sqlite:banco");
+require_once './dbconn.php';
 
 $hoje = new DateTime();
 $mesAnterior = new DateTime('-1 month');

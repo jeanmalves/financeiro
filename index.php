@@ -17,12 +17,21 @@
     <link href="css/bootstrap-datepicker3.min.css" rel="stylesheet">
 
     <style>
-        .valor-debito{
+        .valor-debito {
             color: red;
         }
-        .valor-credito{
+        .valor-credito {
             color: blue;
         }
+        .saldo {
+            font-size: 12pt;
+            border-top: solid 2px black;
+        }
+        
+        #valor-total {
+            font-weight: bold;
+        }
+        
     </style>
     
     <!-- Custom styles for this template -->
@@ -31,6 +40,7 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/bootstrap-datepicker.min.js"></script>
     <script src="locales/bootstrap-datepicker.pt-BR.min.js"></script>
+    <script src="js/util.js"></script>
     
     <script type="text/javascript">
         $(document).ready(function(){
@@ -41,15 +51,9 @@
                 language:'pt-BR'
             });
             
-            $.getJSON('model/30dias.php',function(dados){
-                console.log(dados);
-                
-                var total = 0;
+            $.getJSON('model/30dias.php',function(dados){         
                 $(dados).each(function(ind, elem){
                     var classValor = (elem.tipo == "C")? 'valor-credito':'valor-debito';
-                    
-                    total = (elem.tipo == "C")? total + parseFloat(elem.valor) : total - parseFloat(elem.valor);
-                    
                     var data = new Date(elem.data);
                     
                     var tr = $('<tr>'+
@@ -57,15 +61,16 @@
                         '<td>'+elem.descricao+'</td>'+
                         '<td>'+elem.categoria+'</td>'+
                         '<td>'+elem.tipo+'</td>'+
-                        '<td class="'+classValor+'">R$ '+elem.valor+'</td>'+
+                        '<td class="'+classValor+'">R$ '+ formataDinheiro(elem.valor) +'</td>'+
                       '</tr>');
         
                     $('#rel-30dias tbody').append(tr);
-                    $('#valor-total').html(total);
                 });
+            });
+            
+            $.getJSON('model/saldo.php', function(dados){
                 
-                
-        
+                $("#valor-total").html('R$ '+ formataDinheiro(dados.saldo));
             });
         });
     </script>
