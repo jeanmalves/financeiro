@@ -1,4 +1,8 @@
-
+<?php
+if (!isset($_COOKIE['sess-sis'])) {
+    header('Location: login.html');
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -41,14 +45,32 @@
     <script src="js/bootstrap-datepicker.min.js"></script>
     <script src="locales/bootstrap-datepicker.pt-BR.min.js"></script>
     <script src="js/util.js"></script>
+    <script src="js/jquery.inputmask-3.x/dist/jquery.inputmask.bundle.js"></script>
+   
     
     <script type="text/javascript">
         $(document).ready(function(){
+            
+            var cookies = leCookie();
+            var user = JSON.parse(cookies["sess-sis"]);
+            
+            $("#userNome").html(user.nome);
+            $("#userNome").click(desloga);
+            
+            $("#valor").inputmask();
             
             $("#data").datepicker({
                 autoclose:'false',
                 format:'dd/mm/yyyy',
                 language:'pt-BR'
+            });
+            
+            $.getJSON('model/categorias.php',function(dados){ 
+                var opt = '<option value="0" selected="selected">Selecione</option>';
+                $(dados).each(function(ind, elem){
+                    opt += '<option value='+ elem.id +'>'+ elem.nome +'</option>';
+                });
+                $("#categoria").html(opt);
             });
             
             $.getJSON('model/30dias.php',function(dados){         
@@ -65,18 +87,42 @@
             
             $("#cadastro-novo").submit(function(evento){
                 evento.preventDefault();
-                
+                if($('#Descricao').val() == "") {
+                   $('#Descricao').parent()
+                           .parent()
+                           .addClass('has-error');
+                    
+                    $('#Descricao').parent()
+                            .find('.help-block')
+                            .removeClass('hide');
+                    
+                    return false;
+                }
+                if($("#categoria").val() == 0){
+                    $("#categoria").parent().addClass('has-error');
+                    
+                    $("#categoria").parent()
+                            .find('.help-block')
+                            .removeClass('hide');
+                    
+                    return false;
+                }
                 var novoRegistro = {
-                    descricao: $("#Descricao").val(),
-                    data: $("#data").val(),
-                    valor: $("#valor").val(),
-                    categoria: $("#categoria").val(),
-                    tipo: $("input[name='tipos']:checked").val()
+                    descricao: $('#Descricao').val(),
+                    data: $('#data').val(),
+                    valor: $('#valor').val(),
+                    categoria: $('#categoria').val(),
+                    tipo: $("input[name='tipos']:checked").val(),
+                    usuario: user.id
                 };
                 
                 $.post('model/novo.php', novoRegistro);
-                $("#modal-add").modal('hide');
-                insereRegistro(novoRegistro, "prepend");
+                $('#modal-add').modal('hide');
+                insereRegistro(novoRegistro, 'prepend');
+            });
+            
+            $('#modal-add').on('hidden.bs.modal', function(e){
+                $('#cadastro-novo input').val('');
             });
         });
     </script>
@@ -101,7 +147,7 @@
             <li><a href="#">Relatorios</a></li>
             <li><a href="#">Histórico</a></li>
             <li><a href="#">Contas</a></li>
-            <li><a href="#">Usuário</a></li>
+            <li><a id="userNome" href="#">Usuário</a></li>
           </ul>
           
         </div>
@@ -186,18 +232,20 @@
                     <div class="form-group">
                       <label class="col-md-4 control-label" for="Descricao">Descrição</label>  
                       <div class="col-md-8">
-                      <input id="Descricao" name="Descricao" type="text" placeholder="" class="form-control input-md">
-
+                        <input id="Descricao" name="Descricao" type="text" placeholder="" class="form-control input-md">
+                        <span class="help-block hide">Este campo é obrigatório.</span>    
                       </div>
                     </div>
 
                     <!-- Text input-->
                     <div class="form-group">
-                      <label class="col-md-4 control-label" for="categoria">Categoria</label>  
-                      <div class="col-md-8">
-                      <input id="categoria" name="categoria" type="text" placeholder="" class="form-control input-md">
-
-                      </div>
+                        <label class="col-md-4 control-label" for="categoria">Categoria</label>  
+                        <div class="col-md-8">
+                            <select id="categoria" name="categoria" class="form-control input-md">
+                                <option value="0">Selecione</option>
+                            </select>
+                            <span class="help-block hide">Este campo é obrigatório.</span>
+                        </div>
                     </div>
 
                     <!-- Prepended text-->
@@ -205,8 +253,15 @@
                       <label class="col-md-4 control-label" for="valor">Valor</label>
                       <div class="col-md-8">
                         <div class="input-group">
-                          <span class="input-group-addon">R$</span>
-                          <input id="valor" name="valor" class="form-control" placeholder="" type="text">
+                            <span class="input-group-addon">R$</span>
+                            <input id="valor" name="valor" class="form-control" 
+                            placeholder="" type="text"
+                            data-inputmask="'alias': 'numeric',
+                                'groupSeparator': ',', 
+                                'autoGroup': true,
+                                'digits': 2,
+                                'digitsOptional': false, 
+                                'placeholder': '0'">
                         </div>
 
                       </div>
