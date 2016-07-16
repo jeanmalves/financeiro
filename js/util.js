@@ -1,3 +1,4 @@
+'use strict';
 function formataDinheiro(valor) {
     var valor_formatado;
     var valores;

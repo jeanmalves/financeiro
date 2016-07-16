@@ -40,13 +40,15 @@ if (!isset($_COOKIE['sess-sis'])) {
     
     <!-- Custom styles for this template -->
     <link href="css/dashboard.css" rel="stylesheet">
+    <link href="css/chartist.css" rel="stylesheet">
+    
     <script src="js/jquery-2.2.4.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/bootstrap-datepicker.min.js"></script>
     <script src="locales/bootstrap-datepicker.pt-BR.min.js"></script>
     <script src="js/util.js"></script>
     <script src="js/jquery.inputmask-3.x/dist/jquery.inputmask.bundle.js"></script>
-   
+    <script src="js/chartist.js"></script>    
     
     <script type="text/javascript">
         $(document).ready(function(){
@@ -73,7 +75,9 @@ if (!isset($_COOKIE['sess-sis'])) {
                 $("#categoria").html(opt);
             });
             
-            $.getJSON('model/30dias.php',function(dados){         
+            $.getJSON('model/30dias.php',function(dados){
+                
+                //monta a tabela
                 $(dados).each(function(ind, elem){
                     elem.data = formataDataDB(elem.data);
                     insereRegistro(elem, "append");
@@ -83,6 +87,41 @@ if (!isset($_COOKIE['sess-sis'])) {
             $.getJSON('model/saldo.php', function(dados){
                 
                 $("#valor-total").html('R$ '+ formataDinheiro(dados.saldo));
+            });
+            
+            $.getJSON('model/grafCategoria.php', function(dados){
+                
+                var data = {
+                    labels: [],
+                    series: []
+                };
+                
+                $(dados).each(function(ind, elem){
+                    data.labels.push(elem.categoria);
+                    data.series.push(elem.total);
+                });
+                
+                var options = {
+                    labelInterpolationFnc: function(value) {
+                      return value[0]
+                    }
+                };
+
+                var responsiveOptions = [
+                  ['screen and (min-width: 640px)', {
+                    chartPadding: 30,
+                    labelOffset: 100,
+                    labelDirection: 'explode',
+                    labelInterpolationFnc: function(value) {
+                      return value;
+                    }
+                  }],
+                  ['screen and (min-width: 1024px)', {
+                    labelOffset: 80,
+                    chartPadding: 20
+                  }]
+                ];
+                new Chartist.Pie('#graf-pizza', data, options, responsiveOptions);
             });
             
             $("#cadastro-novo").submit(function(evento){
@@ -166,26 +205,9 @@ if (!isset($_COOKIE['sess-sis'])) {
           </h1>
 
           <div class="row placeholders">
-            <div class="col-xs-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <span class="text-muted">Something else</span>
-            </div>
-            <div class="col-xs-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <span class="text-muted">Something else</span>
-            </div>
-            <div class="col-xs-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <span class="text-muted">Something else</span>
-            </div>
-            <div class="col-xs-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <span class="text-muted">Something else</span>
-            </div>
+              <div class="col-xs-6 col-sm-4">
+                  <div id="graf-pizza" class="ct-square"></div>
+              </div>
           </div>
 
           <h2 class="sub-header">Ultimos 30 dias</h2>
